@@ -22,7 +22,6 @@
   #app {
     display: inline-block;
     padding: 10px 50px 30px;
-    height: 100vh;
     max-width: 1000px;
     text-align: center;
     overflow: scroll;
@@ -108,12 +107,44 @@
     margin-right: 0;
     box-sizing: border-box;
   }
+  .bottom-tool {
+    position: fixed;
+    right: 54px;
+    bottom: 50px;
+    z-index: 999;
+    width: 130px;
+    text-align: right;
+    display: inline-block;
+  }
+  .bottom-tool-item {
+    display: inline-block;
+    margin: 4px 0;
+    background-color: #eff3f6;
+    background-image: linear-gradient(-180deg, #fafbfc, #eff3f6 90%);
+    color: #24292e;
+    border: 1px solid rgba(27, 31, 35, .2);
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    padding: 6px 12px;
+  }
+  .bottom-tool-item:hover {
+    opacity: 0.9;
+  }
   </style>
 </head>
 <body>
 <section id="app">
   <!--顶部操作提示-->
   <section class="m-p-action g-box">{{tips}}</section>
+
+  <!--右下角外链工具栏-->
+  <div class="bottom-tool">
+    <a class="bottom-tool-item" target="_blank" href="https://github.com/Momo707577045/time-parser">github</a>
+    <a class="bottom-tool-item" target="_blank" href="http://blog.luckly-mjw.cn/tool-show/index.html">其他实用工具</a>
+  </div>
 
   <section class="m-p-input-container">
     <input class="m-p-input" type="text" v-model="inputTime" placeholder="请输入时间">
@@ -143,9 +174,9 @@
   </section>
 
   <div
-    class="m-btn without-thousand"
-    :class="{ active: withoutThousand }"
-    @click="() => withoutThousand = !withoutThousand"
+      class="m-btn without-thousand"
+      :class="{ active: withoutThousand }"
+      @click="() => withoutThousand = !withoutThousand"
   >去除时间戳后三位</div>
 
   <section class="timestamp-container">
@@ -175,7 +206,7 @@
 </body>
 <script>
 var _hmt = _hmt || [];
-(function() {
+(function () {
   var hm = document.createElement("script");
   hm.src = "https://hm.baidu.com/hm.js?1f12b0865d866ae1b93514870d93ce89";
   var s = document.getElementsByTagName("script")[0];
@@ -189,7 +220,7 @@ var _hmt = _hmt || [];
 const { reactive, ref, watch } = Vue
 Vue.createApp({
   setup() {
-    const tips = ref('时间转换器') // 顶部提示
+    const tips = ref('时间转换器，点击复制各个值') // 顶部提示
     const inputTime = ref(1526400) // 输入的时间
     const inputTimeToMillisecond = ref(0) // 输入的时间，转化为秒
     const timeUnit = ref('minute') // 当前时间单位类型
@@ -207,7 +238,7 @@ Vue.createApp({
       }[newTimeUnit]
     }, { immediate: true })
 
-    const withoutThousand = ref(false) // 去除时间戳后三位
+    const withoutThousand = ref(true) // 去除时间戳后三位
     const inputTimestamp = ref('') // 输入的时间戳
     const inputTimestr = ref('') // 输入的时间字符串
 
@@ -229,7 +260,7 @@ Vue.createApp({
       document.body.removeChild($input)
       $input = null
 
-      setTimeout(() => tips.value = '时间转换器', 1000)
+      setTimeout(() => tips.value = '时间转换器，点击复制各个值', 1000)
 
       return result
     }
