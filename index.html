@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="keywords" content="时间转化工具">
+  <meta name="description" content="时间转化工具, Momo's Blog, LuckyMomo">
+  <title>时间转化工具</title>
+  <style>
+  /*全局设置*/
+  body::-webkit-scrollbar { display: none}
+  p {
+    margin: 0;
+  }
+  [v-cloak] {
+    display: none;
+  }
+  body {
+    text-align: center;
+  }
+  #app {
+    display: inline-block;
+    padding: 10px 50px 30px;
+    height: 100vh;
+    max-width: 1000px;
+    text-align: center;
+    overflow: scroll;
+  }
+  #app::-webkit-scrollbar {
+    width: 0;
+  }
+  .m-p-action {
+    margin: 20px auto;
+    max-width: 1100px;
+    width: 100%;
+    font-size: 35px;
+    text-align: center;
+    font-weight: bold;
+  }
+  .m-p-input-container {
+    display: flex;
+    justify-content: space-between;
+  }
+  .m-p-input {
+    display: inline-block;
+    padding: 16px;
+    width: 400px;
+    color: #444444;
+    font-size: 24px;
+    border-radius: 4px;
+    box-shadow: none;
+    text-align: right;
+    border: 1px solid #cccccc;
+  }
+  .m-btn {
+    position: relative;
+    display: inline-block;
+    margin-left: 10px;
+    padding: 0 30px;
+    height: 60px;
+    line-height: 60px;
+    font-size: 24px;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+    border: 1px solid #eeeeee;
+    background-color: #2ecc71;
+    opacity: 1;
+    transition: 0.3s all;
+  }
+  .unit {
+    opacity: 0.4;
+  }
+  .active {
+    opacity: 1 !important;
+  }
+  .m-btn:hover {
+    opacity: 0.9;
+  }
+  .parse-result {
+    margin-top: 30px;
+    text-align: center;
+  }
+  .parse-result .m-btn {
+    display: block;
+    margin-left: 0;
+    margin-bottom: 10px;
+    background-color: #2980b9;
+  }
+  .without-thousand {
+    margin-left: 0;
+    margin-bottom: 10px;
+    width: 100%;
+    opacity: 0.4;
+    box-sizing: border-box;
+  }
+  .row {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .row input, .row div {
+    display: inline-block;
+    width: 49%;
+    margin-left: 0;
+    margin-right: 0;
+    box-sizing: border-box;
+  }
+  </style>
+</head>
+<body>
+<section id="app">
+  <!--顶部操作提示-->
+  <section class="m-p-action g-box">{{tips}}</section>
+
+  <section class="m-p-input-container">
+    <input class="m-p-input" type="text" v-model="inputTime" placeholder="请输入时间">
+    <div class="m-btn unit" :class="{ active: timeUnit === 'day' }" @click="() => timeUnit = 'day'">天</div>
+    <div class="m-btn unit" :class="{ active: timeUnit === 'hour' }" @click="() => timeUnit = 'hour'">时</div>
+    <div class="m-btn unit" :class="{ active: timeUnit === 'minute' }" @click="() => timeUnit = 'minute'">分</div>
+    <div class="m-btn unit" :class="{ active: timeUnit === 'second' }" @click="() => timeUnit = 'second'">秒</div>
+    <div class="m-btn unit" :class="{ active: timeUnit === 'millisecond' }" @click="() => timeUnit = 'millisecond'">毫秒</div>
+  </section>
+
+  <section class="parse-result">
+    <div class="m-btn" @click="copyToClipboard(inputTimeToMillisecond / 1000 / 60 / 60 / 24)">
+      天：{{ inputTimeToMillisecond / 1000 / 60 / 60 / 24 }}
+    </div>
+    <div class="m-btn" @click="copyToClipboard(inputTimeToMillisecond / 1000 / 60 / 60)">
+      时：{{ inputTimeToMillisecond / 1000 / 60 / 60 }}
+    </div>
+    <div class="m-btn" @click="copyToClipboard(inputTimeToMillisecond / 1000 / 60)">
+      分：{{ inputTimeToMillisecond / 1000 / 60 }}
+    </div>
+    <div class="m-btn" @click="copyToClipboard(inputTimeToMillisecond / 1000)">
+      秒：{{ inputTimeToMillisecond / 1000 }}
+    </div>
+    <div class="m-btn" @click="copyToClipboard(inputTimeToMillisecond)">
+      毫秒：{{ inputTimeToMillisecond }}
+    </div>
+  </section>
+
+  <div
+    class="m-btn without-thousand"
+    :class="{ active: withoutThousand }"
+    @click="() => withoutThousand = !withoutThousand"
+  >去除时间戳后三位</div>
+
+  <section class="timestamp-container">
+    <div class="row">
+      <div class="m-btn" @click="copyToClipboard(formatTime(currentTime, 'YYYY/MM/DD hh:mm:ss'))">
+        当前时间：{{ formatTime(currentTime, 'YYYY/MM/DD hh:mm:ss') }}
+      </div>
+      <div class="m-btn" @click="copyToClipboard(parseInt(currentTime.getTime() / (withoutThousand ? 1000 : 1)))">
+        当前时间戳：{{ parseInt(currentTime.getTime() / (withoutThousand ? 1000 : 1)) }}
+      </div>
+    </div>
+    <div class="row">
+      <input class="m-p-input" type="text" v-model="inputTimestr" placeholder="请输入日期">
+      <div class="m-btn" @click="copyToClipboard(new Date(inputTimestr).getTime() / (withoutThousand ? 1000 : 1))">
+        转化后时间戳：{{ new Date(inputTimestr).getTime() / (withoutThousand ? 1000 : 1) }}
+      </div>
+    </div>
+    <div class="row">
+      <input class="m-p-input" type="text" v-model="inputTimestamp" placeholder="请输入日期戳">
+      <div class="m-btn" @click="copyToClipboard(formatTime(new Date(new Date('1970-01-01 08:00:00').setMilliseconds(inputTimestamp * (withoutThousand ? 1000 : 1))), 'YYYY/MM/DD hh:mm:ss'))">
+        转化后时间：{{ formatTime(new Date(new Date('1970-01-01 08:00:00').setMilliseconds(inputTimestamp * (withoutThousand ? 1000 : 1))), 'YYYY/MM/DD hh:mm:ss') }}
+      </div>
+    </div>
+  </section>
+
+</section>
+</body>
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?1f12b0865d866ae1b93514870d93ce89";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<!--vue 前端框架-->
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/3.2.0-beta.7/vue.global.min.js"></script>
+
+<script setup>
+const { reactive, ref, watch } = Vue
+Vue.createApp({
+  setup() {
+    const tips = ref('时间转换器') // 顶部提示
+    const inputTime = ref(1526400) // 输入的时间
+    const inputTimeToMillisecond = ref(0) // 输入的时间，转化为秒
+    const timeUnit = ref('minute') // 当前时间单位类型
+    const currentTime = ref(new Date) // 当前时间
+    setInterval(() => currentTime.value = new Date(), 1000)
+
+    // 转化时间
+    watch([inputTime, timeUnit], ([newInputTime, newTimeUnit]) => {
+      inputTimeToMillisecond.value = newInputTime * {
+        day: 1000 * 60 * 60 * 24,
+        hour: 1000 * 60 * 60,
+        minute: 1000 * 60,
+        second: 1000,
+        millisecond: 1,
+      }[newTimeUnit]
+    }, { immediate: true })
+
+    const withoutThousand = ref(false) // 去除时间戳后三位
+    const inputTimestamp = ref('') // 输入的时间戳
+    const inputTimestr = ref('') // 输入的时间字符串
+
+
+    // 拷贝剪切板
+    const copyToClipboard = (content) => {
+      tips.value = `复制成功 ${content}`
+      if (!document.queryCommandSupported('copy')) {
+        return false
+      }
+
+      let $input = document.createElement('textarea')
+      $input.style.opacity = '0'
+      $input.value = content
+      document.body.appendChild($input)
+      $input.select()
+
+      const result = document.execCommand('copy')
+      document.body.removeChild($input)
+      $input = null
+
+      setTimeout(() => tips.value = '时间转换器', 1000)
+
+      return result
+    }
+
+    // 时间格式化
+    const formatTime = (date, formatStr) => {
+      const formatType = {
+        Y: date.getFullYear(),
+        M: date.getMonth() + 1,
+        D: date.getDate(),
+        h: date.getHours(),
+        m: date.getMinutes(),
+        s: date.getSeconds(),
+      }
+      return formatStr.replace(
+        /Y+|M+|D+|h+|m+|s+/g,
+        target => (new Array(target.length).join('0') + formatType[target[0]]).substr(-target.length)
+      )
+    }
+
+    return {
+      tips,
+      timeUnit,
+      inputTime,
+      inputTimeToMillisecond,
+      currentTime,
+      inputTimestamp,
+      inputTimestr,
+      withoutThousand,
+      copyToClipboard,
+      formatTime,
+    }
+  }
+}).mount('#app')
+</script>
+
+</html>
